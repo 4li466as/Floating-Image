@@ -36,7 +36,10 @@ class FloatingImageService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null) return START_STICKY
+        if (intent == null) {
+            restoreOverlayState()
+            return START_STICKY
+        }
 
         when (intent.action) {
             "START" -> {
@@ -66,6 +69,28 @@ class FloatingImageService : Service() {
         }
 
         return START_STICKY
+    }
+    
+    private fun restoreOverlayState() {
+        val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+        val isEnabled = prefs.getBoolean("flutter.overlay_enabled", false)
+        if (!isEnabled) {
+            stopSelf()
+            return
+        }
+        val imagePath = prefs.getString("flutter.image_path", "") ?: ""
+        val size = prefs.getString("flutter.overlay_size", "M") ?: "M"
+        val lockScreen = prefs.getBoolean("flutter.overlay_lock_screen", true)
+        
+        if (imagePath.isNotEmpty()) {
+            overlayManager?.showOverlay(imagePath, size, lockScreen)
+        }
+    }
+    
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // Do not stop the service when app is swiped from recents.
+        // It will remain running as a foreground service.
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onDestroy() {
