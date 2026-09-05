@@ -63,8 +63,14 @@ class FloatingImageService : Service() {
             "RESET_POSITION" -> {
                 overlayManager?.resetPosition()
             }
+            "RESTORE" -> {
+                restoreOverlayState()
+            }
             "STOP" -> {
                 stopSelf()
+            }
+            else -> {
+                restoreOverlayState()
             }
         }
 
@@ -93,6 +99,7 @@ class FloatingImageService : Service() {
         if (isEnabled) {
             val restartServiceIntent = Intent(applicationContext, this.javaClass).also {
                 it.setPackage(packageName)
+                it.action = "RESTORE" // ADDED THIS
             }
             val restartServicePendingIntent = android.app.PendingIntent.getService(
                 this, 1, restartServiceIntent, 
