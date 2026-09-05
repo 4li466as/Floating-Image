@@ -88,8 +88,23 @@ class FloatingImageService : Service() {
     }
     
     override fun onTaskRemoved(rootIntent: Intent?) {
-        // Do not stop the service when app is swiped from recents.
-        // It will remain running as a foreground service.
+        val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+        val isEnabled = prefs.getBoolean("flutter.overlay_enabled", false)
+        if (isEnabled) {
+            val restartServiceIntent = Intent(applicationContext, this.javaClass).also {
+                it.setPackage(packageName)
+            }
+            val restartServicePendingIntent = android.app.PendingIntent.getService(
+                this, 1, restartServiceIntent, 
+                android.app.PendingIntent.FLAG_ONE_SHOT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+            val alarmService = applicationContext.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            alarmService.set(
+                android.app.AlarmManager.ELAPSED_REALTIME,
+                android.os.SystemClock.elapsedRealtime() + 1000,
+                restartServicePendingIntent
+            )
+        }
         super.onTaskRemoved(rootIntent)
     }
 

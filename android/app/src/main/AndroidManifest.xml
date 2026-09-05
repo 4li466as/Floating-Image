@@ -31,7 +31,6 @@
             android:name=".FloatingImageService"
             android:exported="false"
             android:stopWithTask="false"
-            android:process=":overlay"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                       android:value="Floating Overlay for Images" />
